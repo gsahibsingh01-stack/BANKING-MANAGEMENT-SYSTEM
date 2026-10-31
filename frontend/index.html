@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex National Bank - Full-Stack Banking Management System</title>
+    
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom FinTech Styling -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ============================================================= -->
+    <!-- AUTHENTICATION SCREEN (LOGIN / REGISTER / DEMO ACCOUNTS)       -->
+    <!-- ============================================================= -->
+    <section id="auth-section" class="auth-wrapper">
+        <div class="auth-container">
+            <div class="auth-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <h1>Apex National Bank</h1>
+                <p>Enterprise Banking Management Portal</p>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="auth-tabs">
+                <button type="button" id="auth-tab-login" class="auth-tab-btn active" onclick="App.switchAuthTab('login')">Sign In</button>
+                <button type="button" id="auth-tab-register" class="auth-tab-btn" onclick="App.switchAuthTab('register')">Open New Account</button>
+            </div>
+
+            <!-- Sign In Form -->
+            <form id="login-form" class="auth-form" onsubmit="App.handleLoginSubmit(event)">
+                <div class="form-group">
+                    <label for="login-username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="e.g. customer, manager, or admin" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" id="btn-login-submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Access Secure Portal
+                </button>
+            </form>
+
+            <!-- Registration Form -->
+            <form id="register-form" class="auth-form" style="display:none;" onsubmit="App.handleRegisterSubmit(event)">
+                <div class="form-group">
+                    <label for="reg-fullname">Full Legal Name</label>
+                    <input type="text" id="reg-fullname" class="form-input" placeholder="e.g. John Doe" required>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label for="reg-username">Username</label>
+                        <input type="text" id="reg-username" class="form-input" placeholder="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <input type="password" id="reg-password" class="form-input" placeholder="••••••" minlength="6" required>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" class="form-input" placeholder="name@domain.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-phone">Phone Number</label>
+                        <input type="tel" id="reg-phone" class="form-input" placeholder="+1-555-0199">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label for="reg-account-type">Account Type</label>
+                        <select id="reg-account-type" class="form-select">
+                            <option value="Checking">Checking Account</option>
+                            <option value="Savings">High-Yield Savings</option>
+                            <option value="Business">Business Account</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-initial-deposit">Initial Deposit ($)</label>
+                        <input type="number" id="reg-initial-deposit" class="form-input" value="500" min="50">
+                    </div>
+                </div>
+                <button type="submit" id="btn-register-submit" class="btn-primary">
+                    <i class="fas fa-user-plus"></i> Complete Registration
+                </button>
+            </form>
+
+            <!-- Quick Demo Login Presets -->
+            <div class="demo-accounts">
+                <div class="demo-title"><i class="fas fa-bolt"></i> One-Click Demo Logins for Evaluation</div>
+                <div class="demo-buttons-grid">
+                    <button type="button" class="demo-btn" onclick="App.fillDemoLogin('customer', 'customer123')">
+                        <strong>Customer</strong><br><span style="font-size:10px;opacity:0.8;">customer123</span>
+                    </button>
+                    <button type="button" class="demo-btn" onclick="App.fillDemoLogin('manager', 'manager123')">
+                        <strong>Manager</strong><br><span style="font-size:10px;opacity:0.8;">manager123</span>
+                    </button>
+                    <button type="button" class="demo-btn" onclick="App.fillDemoLogin('admin', 'admin123')">
+                        <strong>Admin</strong><br><span style="font-size:10px;opacity:0.8;">admin123</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- MAIN APPLICATION WORKSPACE                                    -->
+    <!-- ============================================================= -->
+    <div id="app-section" class="app-container" style="display:none;">
+        
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <span class="sidebar-brand-name">Apex Bank</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Personal Banking</div>
+                <a class="nav-link active" data-view="dashboard" onclick="App.navigate('dashboard')">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-link" data-view="accounts" onclick="App.navigate('accounts')">
+                    <i class="fas fa-landmark"></i>
+                    <span>Accounts</span>
+                </a>
+                <a class="nav-link" data-view="transfer" onclick="App.navigate('transfer')">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Wire Transfer</span>
+                </a>
+                <a class="nav-link" data-view="depositWithdraw" onclick="App.navigate('depositWithdraw')">
+                    <i class="fas fa-money-check-alt"></i>
+                    <span>Deposit / ATM</span>
+                </a>
+                <a class="nav-link" data-view="loans" onclick="App.navigate('loans')">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <span>Loans & Credit</span>
+                </a>
+                <a class="nav-link" data-view="cards" onclick="App.navigate('cards')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Cards & Security</span>
+                </a>
+                <a class="nav-link" data-view="transactions" onclick="App.navigate('transactions')">
+                    <i class="fas fa-receipt"></i>
+                    <span>Statements</span>
+                </a>
+
+                <div class="nav-section-title">Tools & Insights</div>
+                <a class="nav-link" data-view="calculator" onclick="App.navigate('calculator')">
+                    <i class="fas fa-calculator"></i>
+                    <span>EMI Calculator</span>
+                </a>
+
+                <!-- Role Specific Navigation -->
+                <div id="nav-item-manager" style="display:none;flex-direction:column;">
+                    <div class="nav-section-title">Branch Management</div>
+                    <a class="nav-link" data-view="manager" onclick="App.navigate('manager')">
+                        <i class="fas fa-tasks"></i>
+                        <span>Manager Portal</span>
+                    </a>
+                </div>
+
+                <div id="nav-item-admin" style="display:none;flex-direction:column;">
+                    <div class="nav-section-title">Administration</div>
+                    <a class="nav-link" data-view="admin" onclick="App.navigate('admin')">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin Console</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user-info">
+                    <div id="sidebar-user-avatar" class="sidebar-user-avatar">U</div>
+                    <div class="sidebar-user-details">
+                        <div id="sidebar-user-name" class="sidebar-user-name">User</div>
+                        <div id="sidebar-user-role" class="sidebar-user-role">CUSTOMER</div>
+                    </div>
+                </div>
+                <button type="button" class="sidebar-logout-btn" title="Sign Out" onclick="App.logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN VIEW AREA -->
+        <main class="main-wrapper">
+            <!-- Topbar Header -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-toggle" onclick="App.toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+                    <h2 id="topbar-page-title" class="topbar-title">Portfolio Overview</h2>
+                </div>
+                <div class="topbar-right">
+                    <div class="system-status-pill">
+                        <div class="status-dot"></div>
+                        <span>Core Banking Engine Active</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dynamic View Container -->
+            <div id="main-content-area" class="content-container">
+                <!-- Injected via Views.render* -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- MODALS                                                        -->
+    <!-- ============================================================= -->
+    <!-- Modal: Open New Account -->
+    <div id="modal-create-account" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle" style="color:var(--accent-cyan);"></i> Open New Bank Account</h3>
+                <button class="modal-close-btn" onclick="App.closeModal('modal-create-account')">&times;</button>
+            </div>
+            <form onsubmit="App.handleCreateAccountSubmit(event)" style="display:flex;flex-direction:column;gap:16px;">
+                <div class="form-group">
+                    <label>Select Account Type</label>
+                    <select class="form-select" id="new-acc-type">
+                        <option value="Savings">High-Yield Savings (4.25% APY)</option>
+                        <option value="Checking">Everyday Checking (0.50% APY)</option>
+                        <option value="Fixed Deposit">Fixed Deposit (6.50% APY Guaranteed)</option>
+                        <option value="Business">Business Checking (2.00% APY)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Initial Opening Deposit ($)</label>
+                    <input type="number" step="0.01" min="10" class="form-input" id="new-acc-deposit" value="250.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Currency</label>
+                    <select class="form-select" id="new-acc-currency">
+                        <option value="USD">USD - United States Dollar ($)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-check"></i> Open Account Immediately
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Apply for Loan -->
+    <div id="modal-apply-loan" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-signature" style="color:var(--accent-amber);"></i> Apply for Credit / Loan</h3>
+                <button class="modal-close-btn" onclick="App.closeModal('modal-apply-loan')">&times;</button>
+            </div>
+            <form onsubmit="App.handleApplyLoanSubmit(event)" style="display:flex;flex-direction:column;gap:16px;">
+                <div class="form-group">
+                    <label>Loan Category</label>
+                    <select class="form-select" id="loan-type-select">
+                        <option value="Personal Loan">Personal Loan (7.50% Fixed)</option>
+                        <option value="Home Loan">Home Mortgage Loan (4.50% Fixed)</option>
+                        <option value="Education Loan">Education / Student Loan (5.00% Fixed)</option>
+                        <option value="Auto Loan">Automobile Loan (5.50% Fixed)</option>
+                        <option value="Business Loan">Commercial Business Loan (6.80% Fixed)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Disbursement Target Account</label>
+                    <select class="form-select" id="loan-account-select" required></select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label>Loan Amount ($)</label>
+                        <input type="number" step="100" min="500" class="form-input" id="loan-amount-input" value="10000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (Months)</label>
+                        <input type="number" step="6" min="6" max="120" class="form-input" id="loan-months-input" value="24" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Purpose of Loan</label>
+                    <input type="text" class="form-input" id="loan-purpose-input" placeholder="e.g. Higher education, home renovation" required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i> Submit Loan Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Repay Loan EMI -->
+    <div id="modal-repay-loan" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-receipt" style="color:var(--accent-emerald);"></i> Pay Loan Installment</h3>
+                <button class="modal-close-btn" onclick="App.closeModal('modal-repay-loan')">&times;</button>
+            </div>
+            <form onsubmit="App.handleRepayLoanSubmit(event)" style="display:flex;flex-direction:column;gap:16px;">
+                <input type="hidden" id="repay-loan-id">
+                <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:13px;color:var(--text-secondary);">Total Remaining Debt:</span>
+                    <strong id="repay-loan-remaining" style="font-size:18px;color:var(--accent-rose);">$0.00</strong>
+                </div>
+                <div class="form-group">
+                    <label>Pay From Account</label>
+                    <select class="form-select" id="repay-account-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Repayment Amount ($)</label>
+                    <input type="number" step="0.01" min="1" class="form-input" id="repay-amount-input" required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-check"></i> Process Installment Payment
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Issue New Card -->
+    <div id="modal-issue-card" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-credit-card" style="color:var(--accent-cyan);"></i> Issue Virtual Card</h3>
+                <button class="modal-close-btn" onclick="App.closeModal('modal-issue-card')">&times;</button>
+            </div>
+            <form onsubmit="App.handleIssueCardSubmit(event)" style="display:flex;flex-direction:column;gap:16px;">
+                <div class="form-group">
+                    <label>Link to Account</label>
+                    <select class="form-select" id="issue-card-account-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Card Type</label>
+                    <select class="form-select" id="issue-card-type-select">
+                        <option value="Debit">Debit Card (Visa Platinum)</option>
+                        <option value="Credit">Credit Card (Mastercard Black)</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label>Set 4-Digit PIN</label>
+                        <input type="password" maxlength="4" class="form-input" id="issue-card-pin" value="1234" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Daily Limit ($)</label>
+                        <input type="number" step="100" min="500" class="form-input" id="issue-card-limit" value="2500" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-bolt"></i> Generate Virtual Card Now
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Beneficiary -->
+    <div id="modal-add-beneficiary" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus" style="color:var(--accent-cyan);"></i> Add Frequent Payee</h3>
+                <button class="modal-close-btn" onclick="App.closeModal('modal-add-beneficiary')">&times;</button>
+            </div>
+            <form onsubmit="App.handleAddBeneficiarySubmit(event)" style="display:flex;flex-direction:column;gap:16px;">
+                <div class="form-group">
+                    <label>Beneficiary Full Name</label>
+                    <input type="text" class="form-input" id="ben-name" placeholder="e.g. Alice Smith" required>
+                </div>
+                <div class="form-group">
+                    <label>Account Number</label>
+                    <input type="text" class="form-input" id="ben-acc-num" placeholder="e.g. 100120260003" required>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label>Bank Name</label>
+                        <input type="text" class="form-input" id="ben-bank-name" value="Apex National Bank" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Routing / IFSC Code</label>
+                        <input type="text" class="form-input" id="ben-routing" value="APEX0001" required>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label>Nickname (Optional)</label>
+                        <input type="text" class="form-input" id="ben-nickname" placeholder="e.g. Roommate, Landlord">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Notification</label>
+                        <input type="email" class="form-input" id="ben-email" placeholder="payee@email.com">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Beneficiary
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Admin Create User -->
+    <div id="modal-admin-create-user" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-shield" style="color:var(--primary-glow);"></i> Admin: Create New Bank User</h3>
+                <button class="modal-close-btn" onclick="App.closeModal('modal-admin-create-user')">&times;</button>
+            </div>
+            <form onsubmit="App.handleAdminCreateUserSubmit(event)" style="display:flex;flex-direction:column;gap:16px;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-input" id="admin-u-fullname" required>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" class="form-input" id="admin-u-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-input" id="admin-u-password" required minlength="6">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-input" id="admin-u-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" class="form-input" id="admin-u-phone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>System Role & Permissions</label>
+                    <select class="form-select" id="admin-u-role">
+                        <option value="customer">Customer (Standard Online Banking)</option>
+                        <option value="manager">Manager (Approve Loans & Accounts)</option>
+                        <option value="admin">Administrator (Full System Privilege)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-user-check"></i> Provision User Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Application Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/views.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
